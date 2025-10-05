@@ -31,7 +31,9 @@ import {
   faFileContract,
   faCog,
   faBox,
-  faDownload
+  faDownload,
+  faStore,
+  faWarehouse
 } from '@fortawesome/free-solid-svg-icons';
 import './Vendas.css';
 
