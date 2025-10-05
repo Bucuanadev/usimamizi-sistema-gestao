@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Logo e Alinhamento PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .logo-preview {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .logo-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Teste - Logo e Alinhamento no PDF</h1>
+        
+        <div class="test-section">
+            <h3>1. Upload de Logo de Teste</h3>
+            <input type="file" id="logo-upload" accept="image/*" />
+            <div id="logo-preview" class="logo-preview">
+                <p>Nenhum logo carregado</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Dados da Empresa com Nome Longo</h3>
+            <div>
+                <label>Nome da Empresa:</label><br>
+                <input type="text" id="company-name" value="EMPRESA DE DESENVOLVIMENTO DE SOFTWARE E CONSULTORIA INFORMÁTICA LTDA" style="width: 100%; margin: 5px 0;">
+            </div>
+            <div>
+                <label>Telefone:</label><br>
+                <input type="text" id="company-phone" value="+258 84 123 4567" style="width: 100%; margin: 5px 0;">
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Teste de Geração de PDF</h3>
+            <button onclick="testPDFWithLogo()">Gerar PDF com Logo e Nome Longo</button>
+            <div id="pdf-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Verificações</h3>
+            <ul>
+                <li>✅ Logo deve aparecer no lugar da bola laranja</li>
+                <li>✅ Nome da empresa deve quebrar linha automaticamente</li>
+                <li>✅ Fonte deve reduzir se necessário</li>
+                <li>✅ Logo e texto devem estar alinhados</li>
+                <li>✅ Layout deve ficar organizado</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let uploadedLogo = null;
+
+        document.getElementById('logo-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedLogo = e.target.result;
+                    document.getElementById('logo-preview').innerHTML = 
+                        '<img src="' + e.target.result + '" alt="Logo Preview">';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function testPDFWithLogo() {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.innerHTML = 'Gerando PDF...';
+            
+            const companyName = document.getElementById('company-name').value;
+            const companyPhone = document.getElementById('company-phone').value;
+            
+            const testFatura = {
+                numero: 'FAT-2025-TESTE-LOGO',
+                data: '2025-09-30',
+                cliente: {
+                    nome: 'Cliente Teste',
+                    nuit: '987654321',
+                    endereco: 'Rua Teste, 123',
+                    cidade: 'Maputo'
+                },
+                linhas: [
+                    {
+                        codigo: 'PROD001',
+                        descricao: 'Produto de Teste para Verificar Logo e Alinhamento',
+                        quantidade: 1,
+                        preco: 100.00,
+                        desconto: 0,
+                        iva: 16,
+                        total: 116.00
+                    }
+                ],
+                totais: {
+                    subtotal: 100.00,
+                    iva16: 16.00,
+                    iva5: 0,
+                    retencao: 0,
+                    total: 116.00
+                }
+            };
+
+            // Dados da empresa com logo
+            const empresaData = {
+                nomeEmpresa: companyName,
+                telefone: companyPhone,
+                emailGeral: 'teste@empresa.co.mz',
+                ruaAvenida: 'Av. Teste, 123',
+                cidade: 'Maputo',
+                provincia: 'Maputo',
+                logotipo: uploadedLogo
+            };
+
+            try {
+                // Primeiro salvar dados da empresa
+                const saveResponse = await fetch('http://localhost:3001/api/settings/empresa', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(empresaData)
+                });
+
+                if (!saveResponse.ok) {
+                    throw new Error('Erro ao salvar dados da empresa');
+                }
+
+                // Depois gerar PDF
+                const pdfResponse = await fetch('http://localhost:3001/api/sales/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testFatura)
+                });
+                
+                if (pdfResponse.ok) {
+                    const blob = await pdfResponse.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'fatura-teste-logo.pdf';
+                    a.click();
+                    
+                    resultDiv.innerHTML = '<div class="success">✅ PDF gerado com sucesso! Verifique o logo e alinhamento.</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao gerar PDF: ' + pdfResponse.status + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>
+

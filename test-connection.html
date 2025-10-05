@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conectividade</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste de Conectividade Frontend-Backend</h1>
+    
+    <div class="test">
+        <h3>1. Teste de Conexão Básica</h3>
+        <button onclick="testConnection()">Testar Conexão</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>2. Teste de Dados da Empresa</h3>
+        <button onclick="testEmpresaData()">Carregar Dados</button>
+        <div id="empresa-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>3. Teste de Salvamento</h3>
+        <button onclick="testSave()">Salvar Dados de Teste</button>
+        <div id="save-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>4. Logs do Console</h3>
+        <div id="console-logs"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            const logsDiv = document.getElementById('console-logs');
+            logsDiv.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+        }
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = 'Testando conexão...';
+            log('Iniciando teste de conexão...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa');
+                log('Resposta recebida: ' + response.status + ' ' + response.statusText);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ Conexão estabelecida com sucesso!</div>';
+                    log('Conexão bem-sucedida');
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro na conexão: ' + response.status + '</div>';
+                    log('Erro na conexão: ' + response.status);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+                log('Erro capturado: ' + error.message);
+            }
+        }
+
+        async function testEmpresaData() {
+            const resultDiv = document.getElementById('empresa-result');
+            resultDiv.innerHTML = 'Carregando dados...';
+            log('Carregando dados da empresa...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa');
+                const data = await response.json();
+                
+                log('Dados recebidos: ' + JSON.stringify(data, null, 2));
+                
+                if (data.success) {
+                    resultDiv.innerHTML = '<div class="success">✅ Dados carregados com sucesso!</div><pre>' + JSON.stringify(data.data, null, 2) + '</pre>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao carregar dados</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+                log('Erro ao carregar dados: ' + error.message);
+            }
+        }
+
+        async function testSave() {
+            const resultDiv = document.getElementById('save-result');
+            resultDiv.innerHTML = 'Salvando dados...';
+            
+            const testData = {
+                nomeEmpresa: 'USIMAMIZI TESTE - ' + new Date().toLocaleTimeString(),
+                telefone: '+258 84 123 4567',
+                emailGeral: 'teste@usimamizi.co.mz'
+            };
+            
+            log('Enviando dados: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                log('Resposta do salvamento: ' + response.status + ' ' + response.statusText);
+                
+                const data = await response.json();
+                log('Resultado do salvamento: ' + JSON.stringify(data, null, 2));
+                
+                if (data.success) {
+                    resultDiv.innerHTML = '<div class="success">✅ Dados salvos com sucesso!</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao salvar: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+                log('Erro ao salvar: ' + error.message);
+            }
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            log('Página carregada, iniciando testes...');
+            testConnection();
+        };
+    </script>
+</body>
+</html>
+

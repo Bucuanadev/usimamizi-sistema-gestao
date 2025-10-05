@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PDF - USIMAMIZI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Geração de PDF - USIMAMIZI</h1>
+    
+    <div class="test-section">
+        <h3>1. Teste de Configurações</h3>
+        <button onclick="testSettings()">Testar Endpoint de Configurações</button>
+        <div id="settingsResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Teste de Geração de PDF</h3>
+        <button onclick="testPDFGeneration()">Gerar PDF de Teste</button>
+        <div id="pdfResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Teste de Upload de Logo</h3>
+        <button onclick="testLogoUpload()">Testar Upload de Logo</button>
+        <div id="logoResult" class="result"></div>
+    </div>
+
+    <script>
+        // Dados de teste para a fatura
+        const testFaturaData = {
+            id: 1,
+            numero: "FAT/2025/001",
+            serie: "FAT",
+            data: "2025-09-30",
+            vencimento: "2025-10-30",
+            estado: "rascunho",
+            tipo: "normal",
+            retencao: false,
+            percentagemRetencao: 0,
+            avisoCredito: "",
+            cliente: {
+                codigo: "CLI001",
+                nome: "Empresa Teste LDA",
+                nuit: "123456789",
+                email: "teste@empresa.co.mz",
+                morada: "Av. Julius Nyerere, 1234\nMaputo, Moçambique"
+            },
+            vendedor: "João Silva",
+            condicaoPagamento: "30dias",
+            linhas: [
+                {
+                    id: "1",
+                    codigo: "PROD001",
+                    descricao: "Computador Desktop",
+                    quantidade: 2,
+                    preco: 15000,
+                    desconto: 5,
+                    iva: 16,
+                    total: 30480
+                },
+                {
+                    id: "2",
+                    codigo: "PROD002",
+                    descricao: "Monitor 24\"",
+                    quantidade: 2,
+                    preco: 5000,
+                    desconto: 0,
+                    iva: 16,
+                    total: 11600
+                }
+            ],
+            totais: {
+                subtotal: 40000,
+                iva16: 4200,
+                iva5: 0,
+                retencao: 0,
+                total: 42080
+            },
+            observacoesInternas: "Teste de geração de PDF",
+            observacoesCliente: "Agradecemos a sua preferência!",
+            referenciaInterna: "REF001",
+            localExpedicao: "armazem_central",
+            guias: "GR 2024/001"
+        };
+
+        async function testSettings() {
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/logo');
+                const data = await response.json();
+                document.getElementById('settingsResult').innerHTML = 
+                    `<strong>✅ Sucesso:</strong><br>
+                     Logo: ${data.data.logo || 'Não definido'}<br>
+                     Nome: ${data.data.companyName}<br>
+                     Subtítulo: ${data.data.companySubtitle}`;
+            } catch (error) {
+                document.getElementById('settingsResult').innerHTML = 
+                    `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+
+        async function testPDFGeneration() {
+            try {
+                const response = await fetch('http://localhost:3001/api/sales/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testFaturaData)
+                });
+
+                if (response.ok) {
+                    // Criar blob e fazer download
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Fatura_${testFaturaData.numero}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    document.getElementById('pdfResult').innerHTML = 
+                        `<strong>✅ PDF gerado com sucesso!</strong><br>
+                         Verifique as correções:<br>
+                         • Logo da empresa (círculo laranja)<br>
+                         • Texto "Fatura Proforma" removido<br>
+                         • Tabela de totais na posição lateral direita (como antes)<br>
+                         • Estrutura idêntica à tabela de produtos<br>
+                         • Valores alinhados à direita corretamente<br>
+                         • Símbolo "MT" na mesma linha dos valores<br>
+                         • Largura menor (200px) na posição lateral`;
+                } else {
+                    const errorData = await response.json();
+                    document.getElementById('pdfResult').innerHTML = 
+                        `<strong>❌ Erro:</strong> ${errorData.message}`;
+                }
+            } catch (error) {
+                document.getElementById('pdfResult').innerHTML = 
+                    `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+
+        async function testLogoUpload() {
+            try {
+                const logoData = {
+                    logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGRjZCMzUiLz4KPHRleHQgeD0iMjAiIHk9IjI2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCI+VTx0ZXh0Pgo8L3N2Zz4K",
+                    companyName: "USIMAMIZI, LDA",
+                    companySubtitle: "SISTEMA DE GESTÃO INTEGRADO"
+                };
+
+                const response = await fetch('http://localhost:3001/api/settings/logo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(logoData)
+                });
+
+                const data = await response.json();
+                document.getElementById('logoResult').innerHTML = 
+                    `<strong>✅ Logo atualizado:</strong><br>
+                     ${data.message}<br>
+                     <small>Logo SVG em base64 salvo com sucesso</small>`;
+            } catch (error) {
+                document.getElementById('logoResult').innerHTML = 
+                    `<strong>❌ Erro:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

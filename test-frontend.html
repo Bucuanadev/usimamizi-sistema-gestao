@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conexão Frontend-Backend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Conexão Frontend-Backend</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="testConnection()">Testar Conexão</button>
+    <button onclick="testDocuments()">Testar Documentos</button>
+    <button onclick="testNumbers()">Testar Números</button>
+    <button onclick="testCreateDocument()">Testar Criar Documento</button>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testConnection() {
+            try {
+                addResult('🔍 Testando conexão com backend...');
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                addResult(`✅ Health check OK: ${data.message}`);
+            } catch (error) {
+                addResult(`❌ Erro na conexão: ${error.message}`, false);
+            }
+        }
+        
+        async function testDocuments() {
+            try {
+                addResult('🔍 Testando endpoint de documentos...');
+                const response = await fetch('http://localhost:3001/api/sales/documents');
+                const data = await response.json();
+                addResult(`✅ Documentos OK: ${data.data.length} documentos encontrados`);
+            } catch (error) {
+                addResult(`❌ Erro nos documentos: ${error.message}`, false);
+            }
+        }
+        
+        async function testNumbers() {
+            try {
+                addResult('🔍 Testando endpoint de números...');
+                const response = await fetch('http://localhost:3001/api/sales/document-numbers/fatura');
+                const data = await response.json();
+                addResult(`✅ Números OK: ${data.data.full_number}`);
+            } catch (error) {
+                addResult(`❌ Erro nos números: ${error.message}`, false);
+            }
+        }
+        
+        async function testCreateDocument() {
+            try {
+                addResult('🔍 Testando criação de documento...');
+                const response = await fetch('http://localhost:3001/api/sales/documents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        document_type: 'FAT',
+                        series: 'FAT',
+                        number: 'TEST/001',
+                        full_number: 'FAT TEST/001',
+                        document_date: new Date().toISOString().split('T')[0],
+                        client_name: 'Cliente Teste',
+                        total_amount: 1000,
+                        status: 'DRAFT'
+                    })
+                });
+                const data = await response.json();
+                addResult(`✅ Documento criado: ${data.data.full_number}`);
+            } catch (error) {
+                addResult(`❌ Erro ao criar documento: ${error.message}`, false);
+            }
+        }
+        
+        // Testar automaticamente ao carregar a página
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

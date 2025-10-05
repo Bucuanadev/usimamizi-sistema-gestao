@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste React</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        function TestComponent() {
+            const [result, setResult] = React.useState('Testando...');
+            
+            React.useEffect(() => {
+                async function test() {
+                    try {
+                        const response = await fetch('http://localhost:3001/api/health');
+                        const data = await response.json();
+                        setResult('✅ Backend OK: ' + data.message);
+                    } catch (error) {
+                        setResult('❌ Erro: ' + error.message);
+                    }
+                }
+                test();
+            }, []);
+            
+            return React.createElement('div', null, result);
+        }
+        
+        ReactDOM.render(React.createElement(TestComponent), document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conectividade Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background-color: #0056b3; }
+        input, textarea { width: 100%; margin: 5px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste de Conectividade - Definições</h1>
+    
+    <div class="test">
+        <h3>1. Teste de Conexão Backend</h3>
+        <button onclick="testConnection()">Testar Conexão</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>2. Dados da Empresa</h3>
+        <input type="text" id="company-name" placeholder="Nome da Empresa" value="USIMAMIZI TESTE">
+        <input type="text" id="company-phone" placeholder="Telefone" value="+258 84 123 4567">
+        <input type="email" id="company-email" placeholder="Email" value="teste@usimamizi.co.mz">
+        <textarea id="company-address" placeholder="Endereço" rows="2">Av. Julius Nyerere, 1234, Maputo</textarea>
+    </div>
+
+    <div class="test">
+        <h3>3. Teste de Salvamento</h3>
+        <button onclick="testSave()">Salvar Dados</button>
+        <div id="save-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>4. Logs</h3>
+        <div id="logs" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = 'Testando conexão...';
+            log('Iniciando teste de conexão...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa');
+                log(`Resposta recebida: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`Dados recebidos: ${JSON.stringify(data, null, 2)}`);
+                    resultDiv.innerHTML = '<div class="success">✅ Conexão estabelecida com sucesso!</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro na conexão: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                log(`Erro capturado: ${error.message}`);
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        async function testSave() {
+            const resultDiv = document.getElementById('save-result');
+            resultDiv.innerHTML = 'Salvando dados...';
+            
+            const empresaData = {
+                nomeEmpresa: document.getElementById('company-name').value,
+                telefone: document.getElementById('company-phone').value,
+                emailGeral: document.getElementById('company-email').value,
+                ruaAvenida: document.getElementById('company-address').value,
+                cidade: 'Maputo',
+                provincia: 'Maputo'
+            };
+            
+            log(`Enviando dados: ${JSON.stringify(empresaData, null, 2)}`);
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(empresaData)
+                });
+                
+                log(`Resposta do salvamento: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`Resultado: ${JSON.stringify(data, null, 2)}`);
+                    resultDiv.innerHTML = '<div class="success">✅ Dados salvos com sucesso!</div>';
+                } else {
+                    const errorData = await response.json();
+                    log(`Erro do servidor: ${JSON.stringify(errorData, null, 2)}`);
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao salvar: ' + (errorData.message || 'Erro desconhecido') + '</div>';
+                }
+            } catch (error) {
+                log(`Erro ao salvar: ${error.message}`);
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            log('Página carregada, iniciando testes...');
+            testConnection();
+        };
+    </script>
+</body>
+</html>
+

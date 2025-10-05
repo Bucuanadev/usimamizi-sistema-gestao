@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Módulo de Definições</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste - Módulo de Definições</h1>
+        
+        <div class="test-section">
+            <h3>1. Teste de Conectividade Backend</h3>
+            <button onclick="testBackendConnection()">Testar Conexão</button>
+            <div id="backend-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Teste de Dados da Empresa</h3>
+            <button onclick="testEmpresaData()">Carregar Dados da Empresa</button>
+            <div id="empresa-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Teste de Salvamento de Dados</h3>
+            <button onclick="testSaveEmpresaData()">Salvar Dados de Teste</button>
+            <div id="save-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Teste de Geração de PDF com Dados da Empresa</h3>
+            <button onclick="testPDFGeneration()">Gerar PDF de Teste</button>
+            <div id="pdf-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Links Úteis</h3>
+            <p>
+                <a href="http://localhost:3000" target="_blank">Frontend React (Porta 3000)</a><br>
+                <a href="http://localhost:3001/api/settings/empresa" target="_blank">API Dados da Empresa</a><br>
+                <a href="http://localhost:3001/api/sales/documents" target="_blank">API Documentos</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        async function testBackendConnection() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = 'Testando conexão...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa');
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ Backend conectado com sucesso!</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro na conexão: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        async function testEmpresaData() {
+            const resultDiv = document.getElementById('empresa-result');
+            resultDiv.innerHTML = 'Carregando dados...';
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Dados carregados com sucesso!</h4>
+                            <pre>${JSON.stringify(data.data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao carregar dados</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        async function testSaveEmpresaData() {
+            const resultDiv = document.getElementById('save-result');
+            resultDiv.innerHTML = 'Salvando dados...';
+            
+            const testData = {
+                nomeEmpresa: 'USIMAMIZI, LDA - TESTE',
+                nomeComercial: 'USIMAMIZI',
+                nuit: '123456789',
+                capitalSocial: '1.000.000,00 MT',
+                ruaAvenida: 'Av. Julius Nyerere, 1234',
+                cidade: 'Maputo',
+                provincia: 'Maputo',
+                codigoPostal: '1100',
+                telefone: '+258 84 123 4567',
+                fax: '+258 21 123 456',
+                emailGeral: 'geral@usimamizi.co.mz',
+                website: 'www.usimamizi.co.mz',
+                codigoCAE: '62010',
+                descricaoAtividade: 'Desenvolvimento de software e consultoria informática',
+                logotipo: '',
+                bancoNome: 'Banco BCI',
+                bancoConta: '1234567890123456',
+                bancoNIB: '0008 0000 12345678901 23',
+                bancoIBAN: 'MZ59000800001234567890123',
+                modalidadePagamento: 'Numerário, depósito ou Cheque'
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = '<div class="success">✅ Dados salvos com sucesso!</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao salvar: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        async function testPDFGeneration() {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.innerHTML = 'Gerando PDF...';
+            
+            const testFatura = {
+                numero: 'FAT-2025-001',
+                data: '2025-09-30',
+                cliente: {
+                    nome: 'Cliente Teste',
+                    nuit: '987654321',
+                    endereco: 'Rua Teste, 123',
+                    cidade: 'Maputo'
+                },
+                linhas: [
+                    {
+                        codigo: 'PROD001',
+                        descricao: 'Produto de Teste',
+                        quantidade: 2,
+                        preco: 100.00,
+                        desconto: 0,
+                        iva: 16,
+                        total: 232.00
+                    }
+                ],
+                totais: {
+                    subtotal: 200.00,
+                    iva16: 32.00,
+                    iva5: 0,
+                    retencao: 0,
+                    total: 232.00
+                }
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/sales/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testFatura)
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'fatura-teste.pdf';
+                    a.click();
+                    
+                    resultDiv.innerHTML = '<div class="success">✅ PDF gerado com sucesso! (Download iniciado)</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao gerar PDF: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        // Teste automático ao carregar a página
+        window.onload = function() {
+            testBackendConnection();
+        };
+    </script>
+</body>
+</html>
+

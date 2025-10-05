@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste PDF Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background-color: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste de Exportação PDF - Frontend</h1>
+    
+    <div class="test">
+        <h3>1. Teste de Conectividade</h3>
+        <button onclick="testConnection()">Testar Conexão</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>2. Teste de Exportação PDF</h3>
+        <button onclick="testPDFExport()">Exportar PDF</button>
+        <div id="pdf-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>3. Logs Detalhados</h3>
+        <div id="logs" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = 'Testando conexão...';
+            log('Iniciando teste de conexão...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/settings/empresa');
+                log(`Resposta recebida: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`Dados recebidos: ${JSON.stringify(data, null, 2)}`);
+                    resultDiv.innerHTML = '<div class="success">✅ Conexão estabelecida com sucesso!</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Erro na conexão: ' + response.status + '</div>';
+                }
+            } catch (error) {
+                log(`Erro capturado: ${error.message}`);
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        async function testPDFExport() {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.innerHTML = 'Exportando PDF...';
+            
+            const testFatura = {
+                numero: 'FAT-2025-TESTE-FRONTEND',
+                data: '2025-09-30',
+                cliente: {
+                    nome: 'Cliente Teste Frontend',
+                    nuit: '987654321',
+                    morada: 'Rua Teste Frontend, 123\nMaputo, Moçambique'
+                },
+                linhas: [
+                    {
+                        codigo: 'PROD001',
+                        descricao: 'Produto de Teste Frontend',
+                        quantidade: 2,
+                        preco: 150.00,
+                        desconto: 0,
+                        iva: 16,
+                        total: 348.00
+                    }
+                ],
+                totais: {
+                    subtotal: 300.00,
+                    iva16: 48.00,
+                    iva5: 0,
+                    retencao: 0,
+                    total: 348.00
+                }
+            };
+            
+            log(`Enviando dados da fatura: ${JSON.stringify(testFatura, null, 2)}`);
+            
+            try {
+                log('Fazendo requisição para export-pdf...');
+                const response = await fetch('http://localhost:3001/api/sales/export-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testFatura)
+                });
+                
+                log(`Resposta recebida: ${response.status} ${response.statusText}`);
+                log(`Headers: ${JSON.stringify([...response.headers.entries()], null, 2)}`);
+                
+                if (response.ok) {
+                    log('Resposta OK, processando blob...');
+                    const blob = await response.blob();
+                    log(`Blob criado: ${blob.size} bytes, tipo: ${blob.type}`);
+                    
+                    const url = window.URL.createObjectURL(blob);
+                    log(`URL criada: ${url}`);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'fatura-teste-frontend.pdf';
+                    a.click();
+                    
+                    log('Download iniciado');
+                    resultDiv.innerHTML = '<div class="success">✅ PDF exportado com sucesso! (Download iniciado)</div>';
+                } else {
+                    const errorText = await response.text();
+                    log(`Erro do servidor: ${errorText}`);
+                    resultDiv.innerHTML = '<div class="error">❌ Erro ao exportar PDF: ' + response.status + ' - ' + errorText + '</div>';
+                }
+            } catch (error) {
+                log(`Erro capturado: ${error.message}`);
+                log(`Stack trace: ${error.stack}`);
+                resultDiv.innerHTML = '<div class="error">❌ Erro: ' + error.message + '</div>';
+            }
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            log('Página carregada, iniciando testes...');
+            testConnection();
+        };
+    </script>
+</body>
+</html>
+

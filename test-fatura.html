@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Interface de Faturação</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Teste Interface de Faturação</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="testCreateFatura()">Testar Criar Fatura</button>
+    <button onclick="testEditFatura()">Testar Editar Fatura</button>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `test ${isSuccess ? 'success' : 'error'}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+        }
+        
+        async function testCreateFatura() {
+            try {
+                addResult('🔍 Testando criação de fatura...');
+                
+                // Simular dados de fatura
+                const faturaData = {
+                    document_type: 'FAT',
+                    series: 'FAT',
+                    number: 'TEST/001',
+                    full_number: 'FAT TEST/001',
+                    document_date: new Date().toISOString().split('T')[0],
+                    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    client_name: 'Cliente Teste',
+                    client_tax_number: '123456789',
+                    client_address: 'Maputo, Moçambique',
+                    client_email: 'teste@cliente.co.mz',
+                    vendedor: 'João Silva',
+                    payment_terms: '30dias',
+                    currency: 'MZN',
+                    subtotal: 1000,
+                    vat_amount: 160,
+                    total_amount: 1160,
+                    status: 'DRAFT',
+                    linhas: [{
+                        id: 'linha_1',
+                        codigo: 'PROD001',
+                        descricao: 'Produto Teste',
+                        quantidade: 1,
+                        preco: 1000,
+                        desconto: 0,
+                        iva: 0.16,
+                        total: 1160
+                    }],
+                    totais: {
+                        subtotal: 1000,
+                        iva16: 160,
+                        iva5: 0,
+                        retencao: 0,
+                        total: 1160
+                    }
+                };
+                
+                const response = await fetch('http://localhost:3001/api/sales/documents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(faturaData)
+                });
+                
+                const data = await response.json();
+                addResult(`✅ Fatura criada: ${data.data.full_number}`);
+            } catch (error) {
+                addResult(`❌ Erro ao criar fatura: ${error.message}`, false);
+            }
+        }
+        
+        async function testEditFatura() {
+            try {
+                addResult('🔍 Testando edição de fatura...');
+                
+                // Primeiro criar uma fatura
+                const faturaData = {
+                    document_type: 'FAT',
+                    series: 'FAT',
+                    number: 'EDIT/001',
+                    full_number: 'FAT EDIT/001',
+                    document_date: new Date().toISOString().split('T')[0],
+                    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    client_name: 'Cliente Edit',
+                    client_tax_number: '987654321',
+                    client_address: 'Beira, Moçambique',
+                    client_email: 'edit@cliente.co.mz',
+                    vendedor: 'Maria Santos',
+                    payment_terms: '60dias',
+                    currency: 'MZN',
+                    subtotal: 2000,
+                    vat_amount: 320,
+                    total_amount: 2320,
+                    status: 'DRAFT'
+                };
+                
+                const createResponse = await fetch('http://localhost:3001/api/sales/documents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(faturaData)
+                });
+                
+                const createData = await createResponse.json();
+                const faturaId = createData.data.id;
+                
+                // Agora editar a fatura
+                const editData = {
+                    ...faturaData,
+                    client_name: 'Cliente Editado',
+                    total_amount: 2500
+                };
+                
+                const editResponse = await fetch(`http://localhost:3001/api/sales/documents/${faturaId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(editData)
+                });
+                
+                const editResult = await editResponse.json();
+                addResult(`✅ Fatura editada: ${editResult.data.client_name} - ${editResult.data.total_amount} MT`);
+            } catch (error) {
+                addResult(`❌ Erro ao editar fatura: ${error.message}`, false);
+            }
+        }
+        
+        // Testar automaticamente ao carregar a página
+        window.onload = function() {
+            addResult('🚀 Interface de faturação pronta para teste!');
+        };
+    </script>
+</body>
+</html>

@@ -1,46 +1,169 @@
-# Getting Started with Create React App
+# USIMAMIZI - Sistema de Gestão Empresarial (React)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema completo de gestão empresarial desenvolvido em React com TypeScript, conectado ao backend Node.js.
 
-## Available Scripts
+## 🚀 Funcionalidades
 
-In the project directory, you can run:
+### ✅ Implementadas
+- **Dashboard** - Visão geral do sistema
+- **Faturas** - Gestão completa de faturação
+- **Autenticação** - Sistema de login seguro
+- **Layout Responsivo** - Interface adaptável
+- **Integração com Backend** - API completa
 
-### `npm start`
+### 🔄 Em Desenvolvimento
+- **Stock** - Gestão de inventário
+- **Projetos** - Gestão de projetos
+- **Guias** - Entrada e remessa
+- **Clientes** - Gestão de clientes
+- **Relatórios** - Análises e dashboards
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 🛠️ Tecnologias
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- **React 18** - Framework principal
+- **TypeScript** - Tipagem estática
+- **React Router** - Navegação
+- **Axios** - Cliente HTTP
+- **FontAwesome** - Ícones
+- **CSS3** - Estilização
 
-### `npm test`
+## 📦 Instalação
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Instalar dependências:**
+```bash
+npm install
+```
 
-### `npm run build`
+2. **Configurar ambiente:**
+```bash
+cp env.example .env
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. **Iniciar desenvolvimento:**
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+4. **Acessar aplicação:**
+```
+http://localhost:3000
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🔧 Scripts Disponíveis
 
-### `npm run eject`
+- `npm start` - Inicia servidor de desenvolvimento
+- `npm build` - Cria build de produção
+- `npm test` - Executa testes
+- `npm run eject` - Ejecta configurações
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 📁 Estrutura do Projeto
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+src/
+├── components/          # Componentes reutilizáveis
+│   ├── Layout.tsx      # Layout principal
+│   └── Layout.css      # Estilos do layout
+├── pages/              # Páginas da aplicação
+│   ├── Dashboard.tsx   # Página inicial
+│   ├── Faturas.tsx     # Gestão de faturas
+│   └── *.css          # Estilos das páginas
+├── services/           # Serviços e APIs
+│   └── api.ts         # Cliente da API
+├── hooks/             # Hooks customizados
+│   └── useAuth.tsx    # Hook de autenticação
+├── types/             # Definições TypeScript
+│   └── index.ts       # Tipos principais
+├── config/            # Configurações
+│   └── api.ts         # Configuração da API
+├── utils/             # Utilitários
+├── styles/            # Estilos globais
+└── App.tsx            # Componente principal
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 🔌 Integração com Backend
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+O frontend React se conecta ao backend Node.js através de:
 
-## Learn More
+- **Base URL:** `http://localhost:3000/api`
+- **Autenticação:** JWT Bearer Token
+- **Formato:** JSON
+- **Timeout:** 10 segundos
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Endpoints Principais
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `GET /invoices` - Listar faturas
+- `POST /invoices` - Criar fatura
+- `GET /invoices/stock-products` - Produtos do stock
+- `POST /invoices/:id/process-stock` - Processar fatura
+
+## 🎨 Design System
+
+### Cores
+- **Primária:** #3498db (Azul)
+- **Sucesso:** #27ae60 (Verde)
+- **Aviso:** #f39c12 (Laranja)
+- **Erro:** #e74c3c (Vermelho)
+- **Neutro:** #2c3e50 (Escuro)
+
+### Componentes
+- **Botões:** Padronizados com hover e focus
+- **Formulários:** Validação visual
+- **Tabelas:** Responsivas e interativas
+- **Cards:** Sombras e bordas arredondadas
+
+## 📱 Responsividade
+
+- **Desktop:** Layout completo com sidebar
+- **Tablet:** Sidebar colapsável
+- **Mobile:** Menu hambúrguer
+
+## 🔐 Autenticação
+
+- **Login:** Formulário simples
+- **Token:** Armazenado no localStorage
+- **Proteção:** Rotas protegidas
+- **Logout:** Limpeza de dados
+
+## 🚀 Deploy
+
+### Build de Produção
+```bash
+npm run build
+```
+
+### Servir Build
+```bash
+npx serve -s build
+```
+
+## 📊 Status do Projeto
+
+- ✅ **Estrutura Base** - 100%
+- ✅ **Autenticação** - 100%
+- ✅ **Dashboard** - 100%
+- ✅ **Faturas** - 90%
+- 🔄 **Stock** - 0%
+- 🔄 **Projetos** - 0%
+- 🔄 **Guias** - 0%
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📞 Suporte
+
+Para suporte, entre em contato:
+- **Email:** suporte@usimamizi.co.mz
+- **Telefone:** +258 21 123456
+
+---
+
+**USIMAMIZI** - Sistema de Gestão Empresarial v1.0.0
