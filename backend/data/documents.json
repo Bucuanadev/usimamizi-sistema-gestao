@@ -570,6 +570,134 @@
       "status": "DRAFT",
       "created_at": "2025-10-05T21:48:01.692Z",
       "updated_at": "2025-10-05T21:48:01.692Z"
+    },
+    {
+      "id": 25,
+      "document_type": "GUIA",
+      "series": "GR",
+      "number": "2025/015",
+      "full_number": "GR 2025/015",
+      "document_date": "2025-10-08",
+      "due_date": "2025-11-07",
+      "client_name": "",
+      "client_tax_number": "",
+      "client_address": "",
+      "client_email": "",
+      "vendedor": "João Silva",
+      "payment_terms": "pronto",
+      "currency": "MZN",
+      "subtotal": 0,
+      "vat_amount": 0,
+      "total_amount": 0,
+      "status": "DRAFT",
+      "created_at": "2025-10-08T15:31:49.485Z",
+      "updated_at": "2025-10-08T15:31:49.485Z"
+    },
+    {
+      "id": 26,
+      "document_type": "FAT",
+      "series": "FAT",
+      "number": "FAT 2024/001",
+      "full_number": "FAT 2024/001",
+      "document_date": "2025-10-12",
+      "due_date": "2025-11-11",
+      "client_name": "ACME, Lda",
+      "client_tax_number": "123456789",
+      "client_address": "Av. Julius Nyerere, 1234\nMaputo, Moçambique",
+      "client_email": "geral@acme.co.mz",
+      "vendedor": "João Silva",
+      "payment_terms": "30dias",
+      "currency": "MZN",
+      "subtotal": 18000,
+      "vat_amount": 2880,
+      "total_amount": 20880,
+      "status": "SENT",
+      "linhas": [
+        {
+          "id": "linha_1760290809547",
+          "codigo": "00007",
+          "descricao": "Camara de vigilancia interna",
+          "quantidade": 6,
+          "preco": 3000,
+          "desconto": 0,
+          "iva": 0.16,
+          "total": 20880
+        }
+      ],
+      "totais": {
+        "subtotal": 18000,
+        "iva16": 2880,
+        "iva5": 0,
+        "retencao": 0,
+        "total": 20880
+      },
+      "created_at": "2025-10-12T17:44:13.555Z",
+      "updated_at": "2025-10-12T17:44:16.026Z",
+      "estado": "emitida"
+    },
+    {
+      "id": 27,
+      "document_type": "GUIA",
+      "series": "GR",
+      "number": "2025/016",
+      "full_number": "GR 2025/016",
+      "document_date": "2025-10-12",
+      "due_date": "2025-11-11",
+      "client_name": "",
+      "client_tax_number": "",
+      "client_address": "",
+      "client_email": "",
+      "vendedor": "João Silva",
+      "payment_terms": "pronto",
+      "currency": "MZN",
+      "subtotal": 0,
+      "vat_amount": 0,
+      "total_amount": 0,
+      "status": "SENT",
+      "created_at": "2025-10-12T17:45:34.634Z",
+      "updated_at": "2025-10-12T17:54:05.376Z"
+    },
+    {
+      "id": 28,
+      "document_type": "FAT",
+      "series": "FAT",
+      "number": "FAT 2024/001",
+      "full_number": "FAT 2024/001",
+      "document_date": "2025-10-12",
+      "due_date": "2025-11-11",
+      "client_name": "ACME, Lda",
+      "client_tax_number": "123456789",
+      "client_address": "Av. Julius Nyerere, 1234\nMaputo, Moçambique",
+      "client_email": "geral@acme.co.mz",
+      "vendedor": "João Silva",
+      "payment_terms": "30dias",
+      "currency": "MZN",
+      "subtotal": 30000,
+      "vat_amount": 4800,
+      "total_amount": 34800,
+      "status": "SENT",
+      "linhas": [
+        {
+          "id": "linha_1760297623107",
+          "codigo": "0003",
+          "descricao": "Drone ",
+          "quantidade": 5,
+          "preco": 6000,
+          "desconto": 0,
+          "iva": 0.16,
+          "total": 34800
+        }
+      ],
+      "totais": {
+        "subtotal": 30000,
+        "iva16": 4800,
+        "iva5": 0,
+        "retencao": 0,
+        "total": 34800
+      },
+      "created_at": "2025-10-12T19:34:47.214Z",
+      "updated_at": "2025-10-12T19:34:47.576Z",
+      "estado": "emitida"
     }
   ],
   "nextNumbers": {
@@ -587,7 +715,7 @@
     },
     "guia": {
       "series": "GR",
-      "number": 15
+      "number": 17
     },
     "credito": {
       "series": "NC",

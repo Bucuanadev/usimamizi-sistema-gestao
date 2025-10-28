@@ -1,0 +1,30 @@
+# Comandos para executar na VPS após editar os 4 arquivos manualmente
+
+# 1. Ir para o diretório do frontend
+cd /var/www/usim/usimamizi-react
+
+# 2. Corrigir permissões (se necessário)
+chmod -R 755 .
+chown -R root:root .
+
+# 3. Rebuildar o frontend
+npm run build
+
+# 4. Reiniciar o backend
+cd /var/www/usim/backend
+pm2 restart server
+
+# 5. Recarregar Nginx
+systemctl reload nginx
+
+# 6. Verificar status
+pm2 status
+
+# 7. Testar a aplicação
+curl -I https://usimamizi.pallasmz.online
+
+
+
+
+
+

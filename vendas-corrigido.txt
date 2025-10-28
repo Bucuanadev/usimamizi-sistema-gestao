@@ -1,0 +1,18 @@
+// Código corrigido para a função buscarProdutoPorCodigo
+// Substitua apenas a parte do catch na função buscarProdutoPorCodigo
+
+    } catch (error) {
+      console.error('Erro ao buscar produto:', error);
+      console.error('Tipo do erro:', typeof error);
+      if (error instanceof Error) {
+        console.error('Mensagem do erro:', error.message);
+        console.error('Stack trace:', error.stack);
+      } else {
+        console.error('Erro desconhecido:', error);
+      }
+      return null;
+    }
+
+
+
+

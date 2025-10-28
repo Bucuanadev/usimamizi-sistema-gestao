@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug CORS - PDF Orçamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            margin: 10px 0;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug CORS - Geração de PDF</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de Conectividade Básica</h2>
+        <button onclick="testBasicConnection()">Testar Backend</button>
+        <div id="basic-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Teste de CORS com Preflight</h2>
+        <button onclick="testCORS()">Testar CORS</button>
+        <div id="cors-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Teste de Geração de PDF</h2>
+        <button onclick="testPDFGeneration()">Gerar PDF</button>
+        <div id="pdf-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Logs de Debug</h2>
+        <div id="debug-logs" class="log"></div>
+        <button onclick="clearLogs()">Limpar Logs</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('debug-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('debug-logs').innerHTML = '';
+        }
+
+        // Dados de teste
+        const testData = {
+            full_number: "ORC-CORS-TEST-001",
+            cliente: {
+                nome: "Cliente CORS Test",
+                nuit: "123456789",
+                morada: "Maputo, Moçambique"
+            },
+            document_date: "2025-10-06",
+            cotacaoItens: [
+                {
+                    produto: "Produto CORS Test",
+                    quantidade: 1,
+                    precoUnitario: 100.00,
+                    descontoComercial: 0,
+                    taxaIva: 0.16,
+                    total: 116.00
+                }
+            ],
+            total_amount: 116.00,
+            totais: {
+                subtotal: 100.00,
+                descontos: 0.00,
+                baseTributavel: 100.00,
+                iva16: 16.00,
+                iva5: 0.00,
+                total: 116.00,
+                margemBruta: 46.40
+            }
+        };
+
+        async function testBasicConnection() {
+            const resultDiv = document.getElementById('basic-result');
+            resultDiv.innerHTML = 'Testando...';
+            log('Testando conectividade básica com backend...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ Backend OK: ${data.message}</div>`;
+                    log(`✅ Backend OK: ${data.message}`);
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Erro: ${data.message}</div>`;
+                    log(`❌ Erro: ${data.message}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro de conexão: ${error.message}</div>`;
+                log(`❌ Erro de conexão: ${error.message}`);
+            }
+        }
+
+        async function testCORS() {
+            const resultDiv = document.getElementById('cors-result');
+            resultDiv.innerHTML = 'Testando CORS...';
+            log('Testando CORS com requisição POST...');
+            
+            try {
+                // Teste com OPTIONS (preflight)
+                log('Enviando requisição OPTIONS (preflight)...');
+                const optionsResponse = await fetch('http://localhost:3001/api/sales/export-orc-pdf', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                log(`OPTIONS Response: ${optionsResponse.status} ${optionsResponse.statusText}`);
+                log(`CORS Headers: ${JSON.stringify([...optionsResponse.headers.entries()])}`);
+                
+                if (optionsResponse.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ CORS preflight OK</div>';
+                    log('✅ CORS preflight OK');
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ CORS preflight falhou</div>';
+                    log('❌ CORS preflight falhou');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro CORS: ${error.message}</div>`;
+                log(`❌ Erro CORS: ${error.message}`);
+            }
+        }
+
+        async function testPDFGeneration() {
+            const resultDiv = document.getElementById('pdf-result');
+            resultDiv.innerHTML = 'Gerando PDF...';
+            log('Iniciando teste de geração de PDF...');
+            log(`Dados: ${JSON.stringify(testData, null, 2)}`);
+            
+            try {
+                log('Fazendo requisição POST para geração de PDF...');
+                
+                const response = await fetch('http://localhost:3001/api/sales/export-orc-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                log(`Response Status: ${response.status} ${response.statusText}`);
+                log(`Response Headers: ${JSON.stringify([...response.headers.entries()])}`);
+
+                if (response.ok) {
+                    log('Resposta OK, processando blob...');
+                    const blob = await response.blob();
+                    log(`Blob criado: ${blob.size} bytes, tipo: ${blob.type}`);
+                    
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Orcamento_${testData.full_number}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    resultDiv.innerHTML = `<div class="success">✅ PDF gerado com sucesso! (${blob.size} bytes)</div>`;
+                    log('✅ PDF gerado e baixado com sucesso!');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erro na resposta: ${errorText}`);
+                    resultDiv.innerHTML = `<div class="error">❌ Erro: ${response.status} - ${errorText}</div>`;
+                }
+            } catch (error) {
+                log(`❌ Erro na geração: ${error.message}`);
+                log(`Stack trace: ${error.stack}`);
+                resultDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            }
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            log('Página carregada, iniciando testes...');
+            testBasicConnection();
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

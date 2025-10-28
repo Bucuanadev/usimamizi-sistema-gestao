@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Fetch - Busca de Produtos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            margin: 10px 0;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Fetch - Busca de Produtos</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de Conectividade</h2>
+        <button onclick="testConnection()">Testar Backend</button>
+        <div id="connection-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Teste de Busca de Produto</h2>
+        <input type="text" id="codigo-input" placeholder="Digite o código (ex: TEST001)" value="TEST001" />
+        <button onclick="testProductSearch()">Buscar Produto</button>
+        <div id="product-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Teste de CORS</h2>
+        <button onclick="testCORS()">Testar CORS</button>
+        <div id="cors-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Logs de Debug</h2>
+        <div id="debug-logs" class="log"></div>
+        <button onclick="clearLogs()">Limpar Logs</button>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('debug-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('debug-logs').innerHTML = '';
+        }
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = 'Testando conexão...';
+            log('Testando conexão com backend...');
+            
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                log(`Response status: ${response.status}`);
+                log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                const data = await response.json();
+                log(`Response data: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ Backend conectado: ${data.message}</div>`;
+                    log('✅ Backend conectado com sucesso');
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Erro na conexão: ${data.message}</div>`;
+                    log('❌ Erro na conexão');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro de conexão: ${error.message}</div>`;
+                log(`❌ Erro de conexão: ${error.message}`);
+                log(`Stack trace: ${error.stack}`);
+            }
+        }
+
+        async function testProductSearch() {
+            const codigo = document.getElementById('codigo-input').value;
+            const resultDiv = document.getElementById('product-result');
+            
+            if (!codigo.trim()) {
+                resultDiv.innerHTML = '<div class="error">Digite um código</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Buscando produto...';
+            log(`Iniciando busca por produto: ${codigo}`);
+            
+            try {
+                const url = `http://localhost:3001/api/sales/produto-por-codigo/${encodeURIComponent(codigo)}`;
+                log(`URL da requisição: ${url}`);
+                
+                const response = await fetch(url);
+                log(`Response status: ${response.status}`);
+                log(`Response statusText: ${response.statusText}`);
+                log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`Response data: ${JSON.stringify(data)}`);
+                    
+                    if (data.success) {
+                        const produto = data.data;
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                ✅ Produto encontrado!<br>
+                                <strong>Código:</strong> ${produto.codigo}<br>
+                                <strong>Descrição:</strong> ${produto.descricao}<br>
+                                <strong>Preço:</strong> ${produto.preco}<br>
+                                <strong>Stock:</strong> ${produto.stock_disponivel}
+                            </div>
+                        `;
+                        log('✅ Produto encontrado com sucesso');
+                    } else {
+                        resultDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                        log(`❌ ${data.message}`);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    log(`Error response: ${errorText}`);
+                    resultDiv.innerHTML = `<div class="error">❌ Erro HTTP: ${response.status} - ${errorText}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+                log(`❌ Erro na busca: ${error.message}`);
+                log(`Stack trace: ${error.stack}`);
+            }
+        }
+
+        async function testCORS() {
+            const resultDiv = document.getElementById('cors-result');
+            resultDiv.innerHTML = 'Testando CORS...';
+            log('Testando CORS...');
+            
+            try {
+                // Teste com OPTIONS (preflight)
+                log('Enviando requisição OPTIONS (preflight)...');
+                const optionsResponse = await fetch('http://localhost:3001/api/sales/produto-por-codigo/TEST001', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                log(`OPTIONS Response: ${optionsResponse.status} ${optionsResponse.statusText}`);
+                log(`CORS Headers: ${JSON.stringify([...optionsResponse.headers.entries()])}`);
+                
+                if (optionsResponse.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ CORS preflight OK</div>';
+                    log('✅ CORS preflight OK');
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ CORS preflight falhou</div>';
+                    log('❌ CORS preflight falhou');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro CORS: ${error.message}</div>`;
+                log(`❌ Erro CORS: ${error.message}`);
+            }
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            log('Página carregada, iniciando testes automáticos...');
+            testConnection();
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
+
