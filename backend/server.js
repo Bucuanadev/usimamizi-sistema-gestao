@@ -8,13 +8,23 @@ const PDFDocument = require('pdfkit');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware CORS configurado para permitir frontend
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+// Determinar se está em produção
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configuração CORS dinâmica
+const corsOptions = {
+  origin: isProduction 
+    ? function (origin, callback) {
+        // Em produção, permitir qualquer origem para Railway
+        callback(null, true);
+      }
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
-}));
+};
+
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
@@ -3782,13 +3792,33 @@ function formatarMoeda(valor) {
   }).format(valor);
 }
 
-// Middleware para rotas não encontradas
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Rota não encontrada'
+// Servir arquivos estáticos do React em produção
+if (isProduction) {
+  // Servir arquivos estáticos do build do React
+  app.use(express.static(path.join(__dirname, '../build')));
+  
+  // Para qualquer rota que não seja API, servir o index.html do React
+  app.get('*', (req, res) => {
+    // Verificar se é uma rota de API
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({
+        success: false,
+        message: 'Rota de API não encontrada'
+      });
+    }
+    
+    // Servir o arquivo index.html para rotas do frontend
+    res.sendFile(path.join(__dirname, '../build', 'index.html'));
   });
-});
+} else {
+  // Middleware para rotas não encontradas em desenvolvimento
+  app.use('*', (req, res) => {
+    res.status(404).json({
+      success: false,
+      message: 'Rota não encontrada'
+    });
+  });
+}
 
 // Middleware de tratamento de erros
 app.use((error, req, res, next) => {
