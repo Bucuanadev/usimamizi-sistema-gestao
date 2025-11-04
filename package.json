@@ -30,8 +30,17 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "postinstall": "cd backend && npm install",
-    "railway:build": "npm run build"
+    "postinstall": "cd backend && npm install --legacy-peer-deps",
+    "railway:build": "npm run build",
+    "heroku-postbuild": "npm run build"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": ">=8.0.0"
+  },
+  "overrides": {
+    "@types/react": "^19.1.15",
+    "@types/react-dom": "^19.1.9"
   },
   "eslintConfig": {
     "extends": [
