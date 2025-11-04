@@ -3831,13 +3831,34 @@ app.use((error, req, res, next) => {
 
 
 // Iniciar servidor
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 USIMAMIZI Backend API rodando na porta ${PORT}`);
+  console.log(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`📋 Documentos: http://localhost:${PORT}/api/sales/documents`);
-  console.log(`📈 Dashboard: http://localhost:${PORT}/api/dashboard/stats`);
-  console.log(`📦 Stock: http://localhost:${PORT}/api/stock/produtos`);
-  console.log(`🏢 Estabelecimentos: http://localhost:${PORT}/api/settings/estabelecimentos`);
+  
+  if (!isProduction) {
+    console.log(`📋 Documentos: http://localhost:${PORT}/api/sales/documents`);
+    console.log(`📈 Dashboard: http://localhost:${PORT}/api/dashboard/stats`);
+    console.log(`📦 Stock: http://localhost:${PORT}/api/stock/produtos`);
+    console.log(`🏢 Estabelecimentos: http://localhost:${PORT}/api/settings/estabelecimentos`);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Recebido SIGTERM, encerrando servidor...');
+  server.close(() => {
+    console.log('Servidor encerrado.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('Recebido SIGINT, encerrando servidor...');
+  server.close(() => {
+    console.log('Servidor encerrado.');
+    process.exit(0);
+  });
 });
 
 module.exports = app;

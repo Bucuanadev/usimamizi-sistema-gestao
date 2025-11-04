@@ -1,0 +1,14 @@
+{
+  "name": "usimamizi-sistema-gestao",
+  "description": "Sistema de Gestão Empresarial - Frontend React + Backend Node.js",
+  "build": {
+    "command": "npm install && cd backend && npm install && cd .. && npm run build"
+  },
+  "start": {
+    "command": "node backend/server.js"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3001"
+  }
+}
